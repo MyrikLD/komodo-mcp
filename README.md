@@ -43,6 +43,12 @@ curl http://localhost:8000/health
 
 The server exposes a Streamable HTTP endpoint at `/mcp/`.
 
+**Claude Code** (CLI):
+
+```bash
+claude mcp add -s user --transport http komodo http://localhost:8000/mcp/
+```
+
 **Claude Desktop** (`claude_desktop_config.json`):
 
 ```json
@@ -54,96 +60,6 @@ The server exposes a Streamable HTTP endpoint at `/mcp/`.
   }
 }
 ```
-
-## Tools (53)
-
-### Servers
-
-| Tool | Description |
-|------|-------------|
-| `list_servers` | List all servers |
-| `get_server` | Get server details |
-| `create_server` | Create a new server |
-| `update_server` | Update server configuration |
-| `delete_server` | Delete a server |
-| `get_server_stats` | Get server resource stats (CPU, RAM, disk) |
-
-### Stacks
-
-| Tool | Description |
-|------|-------------|
-| `list_stacks` | List all stacks |
-| `get_stack` | Get stack details |
-| `get_stack_log` | Get stack logs |
-| `create_stack` | Create a new stack |
-| `update_stack` | Update stack configuration |
-| `delete_stack` | Delete a stack |
-| `deploy_stack` | Deploy a stack |
-| `start_stack` | Start a stopped stack |
-| `stop_stack` | Stop a running stack |
-| `restart_stack` | Restart a stack |
-
-### Deployments
-
-| Tool | Description |
-|------|-------------|
-| `list_deployments` | List all deployments |
-| `get_deployment` | Get deployment details |
-| `get_deployment_log` | Get deployment logs |
-| `create_deployment` | Create a new deployment |
-| `update_deployment` | Update deployment configuration |
-| `delete_deployment` | Delete a deployment |
-| `deploy` | Deploy a deployment |
-| `start_deployment` | Start a stopped deployment |
-| `stop_deployment` | Stop a running deployment |
-| `restart_deployment` | Restart a deployment |
-
-### Builds
-
-| Tool | Description |
-|------|-------------|
-| `list_builds` | List all builds |
-| `get_build` | Get build details |
-| `create_build` | Create a new build |
-| `update_build` | Update build configuration |
-| `delete_build` | Delete a build |
-| `run_build` | Run a build |
-
-### Repos
-
-| Tool | Description |
-|------|-------------|
-| `list_repos` | List all repos |
-| `get_repo` | Get repo details |
-| `create_repo` | Create a new repo |
-| `update_repo` | Update repo configuration |
-| `delete_repo` | Delete a repo |
-| `clone_repo` | Clone a repo |
-| `pull_repo` | Pull latest changes |
-
-### Procedures
-
-| Tool | Description |
-|------|-------------|
-| `list_procedures` | List all procedures |
-| `get_procedure` | Get procedure details |
-| `create_procedure` | Create a new procedure |
-| `update_procedure` | Update procedure configuration |
-| `delete_procedure` | Delete a procedure |
-| `run_procedure` | Run a procedure |
-
-### System
-
-| Tool | Description |
-|------|-------------|
-| `get_version` | Get Komodo version |
-| `get_system_info` | Get server system information |
-| `list_updates` | List available updates |
-| `list_alerters` | List all alerters |
-| `get_alerter` | Get alerter details |
-| `create_alerter` | Create a new alerter |
-| `update_alerter` | Update alerter configuration |
-| `delete_alerter` | Delete an alerter |
 
 ## Configuration
 
