@@ -1,0 +1,23 @@
+[project]
+name = "komodo-mcp"
+version = "0.1.0"
+description = "MCP server for Komodo DevOps platform"
+readme = "README.md"
+authors = [
+    { name = "Yorsh Siarhei", email = "siarhei@intermezzo.ai" }
+]
+requires-python = ">=3.12"
+dependencies = [
+    "mcp[cli]",
+    "fastapi",
+    "uvicorn",
+    "httpx",
+    "pydantic-settings",
+]
+
+[project.scripts]
+komodo-mcp = "komodo_mcp.server:main"
+
+[build-system]
+requires = ["uv_build>=0.9.28,<0.10.0"]
+build-backend = "uv_build"
