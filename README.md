@@ -56,6 +56,7 @@ claude mcp add -s user --transport http komodo http://localhost:8000/mcp/
 {
   "mcpServers": {
     "komodo": {
+      "type": "http",
       "url": "http://localhost:8000/mcp/"
     }
   }
@@ -64,9 +65,23 @@ claude mcp add -s user --transport http komodo http://localhost:8000/mcp/
 
 ## Authentication
 
-Set `KOMODO_MCP_AUTH_TOKEN` to require a Bearer token for all `/mcp/` requests. When set, clients must include the `Authorization: Bearer <token>` header. The `/health` endpoint remains open.
+Set `KOMODO_MCP_AUTH_TOKEN` to require a Bearer token for all `/mcp/` requests. The `/health` endpoint remains open. When omitted, the server works without authentication (backward-compatible).
 
-When omitted, the server works without authentication (backward-compatible).
+**Claude Code** (`.claude/settings.json`):
+
+```json
+{
+  "mcpServers": {
+    "komodo": {
+      "type": "http",
+      "url": "http://localhost:8000/mcp/",
+      "headers": {
+        "Authorization": "Bearer your-secret-token"
+      }
+    }
+  }
+}
+```
 
 ## Configuration
 
