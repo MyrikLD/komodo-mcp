@@ -18,6 +18,7 @@ services:
       - KOMODO_MCP_KOMODO_URL=https://your-komodo-instance.example.com
       - KOMODO_MCP_KOMODO_API_KEY=your_api_key
       - KOMODO_MCP_KOMODO_API_SECRET=your_api_secret
+      # - KOMODO_MCP_AUTH_TOKEN=your-secret-token
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
@@ -61,6 +62,12 @@ claude mcp add -s user --transport http komodo http://localhost:8000/mcp/
 }
 ```
 
+## Authentication
+
+Set `KOMODO_MCP_AUTH_TOKEN` to require a Bearer token for all `/mcp/` requests. When set, clients must include the `Authorization: Bearer <token>` header. The `/health` endpoint remains open.
+
+When omitted, the server works without authentication (backward-compatible).
+
 ## Configuration
 
 All settings are configured via environment variables with the `KOMODO_MCP_` prefix:
@@ -72,6 +79,7 @@ All settings are configured via environment variables with the `KOMODO_MCP_` pre
 | `KOMODO_MCP_KOMODO_API_SECRET` | API secret | *required* |
 | `KOMODO_MCP_HOST` | Server bind host | `0.0.0.0` |
 | `KOMODO_MCP_PORT` | Server bind port | `8000` |
+| `KOMODO_MCP_AUTH_TOKEN` | Bearer token for `/mcp/` endpoint | *disabled* |
 
 ## Local Development
 
