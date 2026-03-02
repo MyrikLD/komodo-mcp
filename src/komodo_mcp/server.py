@@ -5,6 +5,7 @@ import uvicorn
 from fastapi import FastAPI
 from fastmcp import FastMCP
 
+from komodo_mcp.auth import BearerTokenMiddleware
 from komodo_mcp.config import settings
 from komodo_mcp.tools import register_all
 
@@ -17,6 +18,9 @@ mcp = FastMCP(
 register_all(mcp)
 
 mcp_app = mcp.http_app(path="/", stateless_http=True)
+
+if settings.AUTH_TOKEN:
+    mcp_app.add_middleware(BearerTokenMiddleware, token=settings.AUTH_TOKEN)
 
 
 @asynccontextmanager
