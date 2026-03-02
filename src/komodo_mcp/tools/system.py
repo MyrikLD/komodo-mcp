@@ -1,8 +1,11 @@
-from typing import Any
+from typing import Annotated, Any
 
 from fastmcp import FastMCP
+from pydantic import Field
 
 from komodo_mcp.client import KomodoClient, KomodoDep
+
+_OID = "MongoDB ObjectId from `_id.$oid`"
 
 
 def register(mcp: FastMCP) -> None:
@@ -27,8 +30,16 @@ def register(mcp: FastMCP) -> None:
         return await komodo.read("ListAlerters")
 
     @mcp.tool
-    async def get_alerter(alerter: str, komodo: KomodoClient = KomodoDep) -> Any:
-        """Get detailed info about an alerter by id or name."""
+    async def get_alerter(
+        alerter: Annotated[
+            str,
+            Field(
+                description="Alerter name or id. Response includes `_id.$oid` — use it as `id` for update_alerter/delete_alerter."
+            ),
+        ],
+        komodo: KomodoClient = KomodoDep,
+    ) -> Any:
+        """Get detailed info about an alerter."""
         return await komodo.read("GetAlerter", {"alerter": alerter})
 
     @mcp.tool
@@ -45,12 +56,22 @@ def register(mcp: FastMCP) -> None:
 
     @mcp.tool
     async def update_alerter(
-        id: str, config: dict[str, Any], komodo: KomodoClient = KomodoDep
+        id: Annotated[str, Field(description=_OID)],
+        config: Annotated[
+            dict[str, Any],
+            Field(
+                description="Alerter config fields to update. Merged into existing config, not replaced."
+            ),
+        ],
+        komodo: KomodoClient = KomodoDep,
     ) -> Any:
-        """Update alerter configuration. Config is merged, not replaced."""
+        """Update alerter configuration."""
         return await komodo.write("UpdateAlerter", {"id": id, "config": config})
 
     @mcp.tool
-    async def delete_alerter(id: str, komodo: KomodoClient = KomodoDep) -> Any:
-        """Delete an alerter by id or name."""
+    async def delete_alerter(
+        id: Annotated[str, Field(description=_OID)],
+        komodo: KomodoClient = KomodoDep,
+    ) -> Any:
+        """Delete an alerter."""
         return await komodo.write("DeleteAlerter", {"id": id})

@@ -1,8 +1,11 @@
-from typing import Any
+from typing import Annotated, Any
 
 from fastmcp import FastMCP
+from pydantic import Field
 
 from komodo_mcp.client import KomodoClient, KomodoDep
+
+_OID = "MongoDB ObjectId from `_id.$oid`"
 
 
 def register(mcp: FastMCP) -> None:
@@ -12,8 +15,16 @@ def register(mcp: FastMCP) -> None:
         return await komodo.read("ListRepos")
 
     @mcp.tool
-    async def get_repo(repo: str, komodo: KomodoClient = KomodoDep) -> Any:
-        """Get detailed info about a repository by id or name."""
+    async def get_repo(
+        repo: Annotated[
+            str,
+            Field(
+                description="Repository name or id. Response includes `_id.$oid` — use it as `id` for update_repo/delete_repo."
+            ),
+        ],
+        komodo: KomodoClient = KomodoDep,
+    ) -> Any:
+        """Get detailed info about a repository."""
         return await komodo.read("GetRepo", {"repo": repo})
 
     @mcp.tool
@@ -30,14 +41,24 @@ def register(mcp: FastMCP) -> None:
 
     @mcp.tool
     async def update_repo(
-        id: str, config: dict[str, Any], komodo: KomodoClient = KomodoDep
+        id: Annotated[str, Field(description=_OID)],
+        config: Annotated[
+            dict[str, Any],
+            Field(
+                description="Repository config fields to update. Merged into existing config, not replaced."
+            ),
+        ],
+        komodo: KomodoClient = KomodoDep,
     ) -> Any:
-        """Update repository configuration. Config is merged, not replaced."""
+        """Update repository configuration."""
         return await komodo.write("UpdateRepo", {"id": id, "config": config})
 
     @mcp.tool
-    async def delete_repo(id: str, komodo: KomodoClient = KomodoDep) -> Any:
-        """Delete a repository by id or name."""
+    async def delete_repo(
+        id: Annotated[str, Field(description=_OID)],
+        komodo: KomodoClient = KomodoDep,
+    ) -> Any:
+        """Delete a repository."""
         return await komodo.write("DeleteRepo", {"id": id})
 
     @mcp.tool
