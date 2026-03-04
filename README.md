@@ -2,11 +2,9 @@
 
 A Python MCP (Model Context Protocol) server for the [Komodo](https://komo.do) DevOps platform. Manage your servers, containers, stacks, builds, and more — directly from AI assistants like Claude.
 
-Built with [FastMCP](https://github.com/jlowin/fastmcp), FastAPI, and httpx.
+Built with [FastMCP](https://github.com/PrefectHQ/fastmcp), uvicorn, and httpx.
 
 ## Quick Start (Docker Compose)
-
-1. **Create `docker-compose.yml`**:
 
 ```yaml
 services:
@@ -18,36 +16,21 @@ services:
       - KOMODO_MCP_KOMODO_URL=https://your-komodo-instance.example.com
       - KOMODO_MCP_KOMODO_API_KEY=your_api_key
       - KOMODO_MCP_KOMODO_API_SECRET=your_api_secret
-      # - KOMODO_MCP_AUTH_TOKEN=your-secret-token
     restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
 ```
-
-2. **Start**:
 
 ```bash
 docker compose up -d
 ```
 
-3. **Verify**:
-
-```bash
-curl http://localhost:8000/health
-# {"status": "ok"}
-```
-
 ## Connect to MCP Client
 
-The server exposes a Streamable HTTP endpoint at `/mcp/`.
+The server exposes a Streamable HTTP endpoint at `/`.
 
 **Claude Code** (CLI):
 
 ```bash
-claude mcp add -s user --transport http komodo http://localhost:8000/mcp/
+claude mcp add -s user --transport http komodo http://localhost:8000/
 ```
 
 **Claude Desktop** (`claude_desktop_config.json`):
@@ -57,7 +40,7 @@ claude mcp add -s user --transport http komodo http://localhost:8000/mcp/
   "mcpServers": {
     "komodo": {
       "type": "http",
-      "url": "http://localhost:8000/mcp/"
+      "url": "http://localhost:8000/"
     }
   }
 }
@@ -65,27 +48,34 @@ claude mcp add -s user --transport http komodo http://localhost:8000/mcp/
 
 ## Authentication
 
-Set `KOMODO_MCP_AUTH_TOKEN` to require a Bearer token for all `/mcp/` requests. The `/health` endpoint remains open. When omitted, the server works without authentication (backward-compatible).
+The server supports OAuth 2.1 with a browser-based login page. When OAuth is enabled, MCP clients are redirected to a login form before receiving an access token.
 
-**Claude Code** (`.claude/settings.json`):
+### Enabling OAuth
 
-```json
-{
-  "mcpServers": {
-    "komodo": {
-      "type": "http",
-      "url": "http://localhost:8000/mcp/",
-      "headers": {
-        "Authorization": "Bearer your-secret-token"
-      }
-    }
-  }
-}
+Set all three variables:
+
+```bash
+KOMODO_MCP_OAUTH_JWT_SECRET=<random string, 32+ chars>
+KOMODO_MCP_OAUTH_PASSWORD=<password shown in browser login form>
+KOMODO_MCP_BASE_URL=https://mcp.example.com   # public URL of this server
 ```
 
-## Configuration
+When OAuth is active, the server exposes standard OAuth 2.1 endpoints:
 
-All settings are configured via environment variables with the `KOMODO_MCP_` prefix:
+| Endpoint | Description |
+|----------|-------------|
+| `/.well-known/oauth-authorization-server` | OAuth metadata discovery |
+| `/register` | Dynamic Client Registration (RFC 7591) |
+| `/authorize` | Authorization endpoint — redirects to `/login` |
+| `/login` | Password login page (browser) |
+| `/token` | Token endpoint |
+| `/revoke` | Token revocation |
+
+**Flow**: MCP client → `/authorize` → browser opens `/login` → user enters password → client receives JWT access token (1h) + refresh token (30d).
+
+Without OAuth configured, the server accepts all connections without authentication.
+
+## Configuration
 
 | Variable | Description | Default |
 |----------|-------------|---------|
@@ -94,41 +84,35 @@ All settings are configured via environment variables with the `KOMODO_MCP_` pre
 | `KOMODO_MCP_KOMODO_API_SECRET` | API secret | *required* |
 | `KOMODO_MCP_HOST` | Server bind host | `0.0.0.0` |
 | `KOMODO_MCP_PORT` | Server bind port | `8000` |
-| `KOMODO_MCP_AUTH_TOKEN` | Bearer token for `/mcp/` endpoint | *disabled* |
+| `KOMODO_MCP_OAUTH_JWT_SECRET` | Secret for signing JWT tokens | *OAuth disabled* |
+| `KOMODO_MCP_OAUTH_PASSWORD` | Password for the browser login page | *OAuth disabled* |
+| `KOMODO_MCP_BASE_URL` | Public URL of this server (used in OAuth metadata) | *OAuth disabled* |
 
 ## Local Development
 
 ```bash
-# Install dependencies
 uv sync
 
-# Set environment variables
 export KOMODO_MCP_KOMODO_URL=https://your-instance.example.com
 export KOMODO_MCP_KOMODO_API_KEY=your_key
 export KOMODO_MCP_KOMODO_API_SECRET=your_secret
 
-# Run the server
 komodo-mcp
 
-# Run tests
-uv run pytest tests/ -v
-
-# Lint
-uv run black --check src/ tests/
+# tests
+python -m pytest tests/
 ```
 
 ## Tech Stack
 
-- **[FastMCP](https://github.com/jlowin/fastmcp)** — MCP SDK with dependency injection
-- **[FastAPI](https://fastapi.tiangolo.com)** — HTTP framework
-- **[httpx](https://www.python-httpx.org)** — Async HTTP client
-- **[pydantic-settings](https://docs.pydantic.dev/latest/concepts/pydantic_settings/)** — Configuration management
-- **[uv](https://docs.astral.sh/uv/)** — Package manager
+- **[FastMCP](https://github.com/PrefectHQ/fastmcp)** — MCP framework with OAuth 2.1 support
+- **[uvicorn](https://www.uvicorn.org)** — ASGI server
+- **[httpx](https://www.python-httpx.org)** — Async HTTP client for Komodo API
+- **[pydantic-settings](https://docs.pydantic.dev/latest/concepts/pydantic_settings/)** — Configuration
 
 ## Links
 
 - [GitHub](https://github.com/MyrikLD/komodo-mcp)
 - [Docker Image](https://github.com/MyrikLD/komodo-mcp/pkgs/container/komodo-mcp)
 - [Komodo Documentation](https://docs.komo.do)
-- [Komodo API Reference](https://docs.komo.do/api)
 - [Model Context Protocol](https://modelcontextprotocol.io)
