@@ -1,21 +1,17 @@
-from fastmcp import FastMCP
+from komodo_mcp.tools.builds import mcp as builds
+from komodo_mcp.tools.deployments import mcp as deployments
+from komodo_mcp.tools.procedures import mcp as procedures
+from komodo_mcp.tools.repos import mcp as repos
+from komodo_mcp.tools.servers import mcp as servers
+from komodo_mcp.tools.stacks import mcp as stacks
+from komodo_mcp.tools.system import mcp as system
 
-from komodo_mcp.tools import (
-    builds,
-    deployments,
-    procedures,
-    repos,
-    servers,
-    stacks,
-    system,
-)
-
-
-def register_all(mcp: FastMCP) -> None:
-    servers.register(mcp)
-    stacks.register(mcp)
-    deployments.register(mcp)
-    builds.register(mcp)
-    repos.register(mcp)
-    procedures.register(mcp)
-    system.register(mcp)
+__all__ = [
+    "builds",
+    "deployments",
+    "procedures",
+    "repos",
+    "servers",
+    "stacks",
+    "system",
+]

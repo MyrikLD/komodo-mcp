@@ -1,13 +1,9 @@
-from collections.abc import AsyncIterator
-from contextlib import asynccontextmanager
-
 import uvicorn
-from fastapi import FastAPI
 from fastmcp import FastMCP
 
 from komodo_mcp.auth import BearerTokenMiddleware
 from komodo_mcp.config import settings
-from komodo_mcp.tools import register_all
+from komodo_mcp.tools import builds, deployments, procedures, repos, servers, stacks, system
 
 mcp = FastMCP(
     name="komodo-mcp",
@@ -15,27 +11,18 @@ mcp = FastMCP(
     "Provides tools for servers, stacks, deployments, builds, repos, procedures, and system management.",
 )
 
-register_all(mcp)
+mcp.mount(servers)
+mcp.mount(stacks)
+mcp.mount(deployments)
+mcp.mount(builds)
+mcp.mount(repos)
+mcp.mount(procedures)
+mcp.mount(system)
 
-mcp_app = mcp.http_app(path="/", stateless_http=True)
+app = mcp.http_app(path="/", stateless_http=True)
 
 if settings.AUTH_TOKEN:
-    mcp_app.add_middleware(BearerTokenMiddleware, token=settings.AUTH_TOKEN)
-
-
-@asynccontextmanager
-async def lifespan(app: FastAPI) -> AsyncIterator[None]:
-    async with mcp_app.lifespan(app):
-        yield
-
-
-app = FastAPI(lifespan=lifespan)
-app.mount("/mcp", mcp_app)
-
-
-@app.get("/health")
-async def health() -> dict[str, str]:
-    return {"status": "ok"}
+    app.add_middleware(BearerTokenMiddleware, token=settings.AUTH_TOKEN)
 
 
 def main() -> None:
