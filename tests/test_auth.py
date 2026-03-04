@@ -33,14 +33,19 @@ def _make_login_request(pending_id: str, password: str) -> Request:
     }
 
     async def receive():
-        return {"type": "http.request", "body": f"id={pending_id}&password={password}".encode()}
+        return {
+            "type": "http.request",
+            "body": f"id={pending_id}&password={password}".encode(),
+        }
 
     return Request(scope, receive)
 
 
 @pytest.fixture
 def provider():
-    return KomodoOAuthProvider(base_url=BASE_URL, jwt_secret=JWT_SECRET, password=PASSWORD)
+    return KomodoOAuthProvider(
+        base_url=BASE_URL, jwt_secret=JWT_SECRET, password=PASSWORD
+    )
 
 
 @pytest.fixture
@@ -61,6 +66,7 @@ async def registered(provider, client_info):
 
 # --- client registration ---
 
+
 async def test_register_and_get_client(provider):
     info = OAuthClientInformationFull(
         client_id="my-client",
@@ -72,8 +78,8 @@ async def test_register_and_get_client(provider):
     assert found is not None and found.client_id == "my-client"
 
 
-
 # --- authorize ---
+
 
 async def test_authorize_creates_pending_and_redirects_to_login(provider, registered):
     url = await provider.authorize(registered, _make_auth_params())
@@ -87,6 +93,7 @@ async def test_authorize_unregistered_client_raises(provider, client_info):
 
 
 # --- login ---
+
 
 async def test_login_correct_password_issues_code(provider, registered):
     login_url = await provider.authorize(registered, _make_auth_params(state="s1"))
@@ -123,6 +130,7 @@ async def test_login_expired_pending_returns_400(provider, registered):
 
 # --- token exchange ---
 
+
 async def _do_full_login(provider, registered) -> str:
     """Returns auth code string after a successful login."""
     login_url = await provider.authorize(registered, _make_auth_params())
@@ -155,20 +163,25 @@ async def test_exchange_code_twice_raises(provider, registered):
 
 # --- access token ---
 
+
 async def test_load_valid_access_token(provider, registered):
     code_str = await _do_full_login(provider, registered)
-    token = await provider.exchange_authorization_code(registered, provider._auth_codes[code_str])
+    token = await provider.exchange_authorization_code(
+        registered, provider._auth_codes[code_str]
+    )
 
     access = await provider.load_access_token(token.access_token)
     assert access is not None and access.client_id == "test-client"
 
 
-
 # --- revocation ---
+
 
 async def test_revoke_access_token_removes_pair(provider, registered):
     code_str = await _do_full_login(provider, registered)
-    token = await provider.exchange_authorization_code(registered, provider._auth_codes[code_str])
+    token = await provider.exchange_authorization_code(
+        registered, provider._auth_codes[code_str]
+    )
 
     access = await provider.load_access_token(token.access_token)
     await provider.revoke_token(access)
@@ -179,7 +192,9 @@ async def test_revoke_access_token_removes_pair(provider, registered):
 
 async def test_revoke_refresh_token_removes_pair(provider, registered):
     code_str = await _do_full_login(provider, registered)
-    token = await provider.exchange_authorization_code(registered, provider._auth_codes[code_str])
+    token = await provider.exchange_authorization_code(
+        registered, provider._auth_codes[code_str]
+    )
 
     refresh = provider._refresh_tokens[token.refresh_token]
     await provider.revoke_token(refresh)
