@@ -3,7 +3,15 @@ from fastmcp import FastMCP
 
 from komodo_mcp.auth import BearerTokenMiddleware
 from komodo_mcp.config import settings
-from komodo_mcp.tools import builds, deployments, procedures, repos, servers, stacks, system
+from komodo_mcp.tools import (
+    builds,
+    deployments,
+    procedures,
+    repos,
+    servers,
+    stacks,
+    system,
+)
 
 mcp = FastMCP(
     name="komodo-mcp",
