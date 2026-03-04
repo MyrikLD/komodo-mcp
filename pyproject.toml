@@ -21,7 +21,7 @@ komodo-mcp = "komodo_mcp.server:main"
 dev = [
     "pytest",
     "pytest-asyncio",
-    "black",
+    "black==25.1.0",
 ]
 
 [tool.pytest.ini_options]

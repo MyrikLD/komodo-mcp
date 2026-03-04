@@ -31,9 +31,7 @@ async def get_deployment(
 
 
 @mcp.tool
-async def get_deployment_log(
-    deployment: str, komodo: KomodoClient = KomodoDep
-) -> Any:
+async def get_deployment_log(deployment: str, komodo: KomodoClient = KomodoDep) -> Any:
     """Get logs for a deployment container."""
     return await komodo.read("GetDeploymentLog", {"deployment": deployment})
 
@@ -102,9 +100,7 @@ async def deploy(
 
 
 @mcp.tool
-async def start_deployment(
-    deployment: str, komodo: KomodoClient = KomodoDep
-) -> Any:
+async def start_deployment(deployment: str, komodo: KomodoClient = KomodoDep) -> Any:
     """Start a stopped deployment container."""
     return await komodo.execute("StartDeployment", {"deployment": deployment})
 
@@ -128,8 +124,6 @@ async def stop_deployment(
 
 
 @mcp.tool
-async def restart_deployment(
-    deployment: str, komodo: KomodoClient = KomodoDep
-) -> Any:
+async def restart_deployment(deployment: str, komodo: KomodoClient = KomodoDep) -> Any:
     """Restart a deployment container."""
     return await komodo.execute("RestartDeployment", {"deployment": deployment})
