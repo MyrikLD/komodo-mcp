@@ -10,13 +10,13 @@ _OID = "MongoDB ObjectId from `_id.$oid`"
 mcp = FastMCP()
 
 
-@mcp.tool
+@mcp.tool(annotations={"readOnlyHint": True, "openWorldHint": False})
 async def list_servers(komodo: KomodoClient = KomodoDep) -> Any:
     """List all servers in Komodo."""
     return await komodo.read("ListServers")
 
 
-@mcp.tool
+@mcp.tool(annotations={"readOnlyHint": True, "openWorldHint": False})
 async def get_server(
     server: Annotated[
         str,
@@ -30,7 +30,7 @@ async def get_server(
     return await komodo.read("GetServer", {"server": server})
 
 
-@mcp.tool
+@mcp.tool(annotations={"destructiveHint": False, "openWorldHint": False})
 async def create_server(
     name: str,
     config: dict[str, Any] | None = None,
@@ -43,7 +43,9 @@ async def create_server(
     return await komodo.write("CreateServer", params)
 
 
-@mcp.tool
+@mcp.tool(
+    annotations={"destructiveHint": False, "idempotentHint": True, "openWorldHint": False}
+)
 async def update_server(
     id: Annotated[str, Field(description=_OID)],
     config: Annotated[
@@ -58,7 +60,7 @@ async def update_server(
     return await komodo.write("UpdateServer", {"id": id, "config": config})
 
 
-@mcp.tool
+@mcp.tool(annotations={"idempotentHint": True, "openWorldHint": False})
 async def delete_server(
     id: Annotated[str, Field(description=_OID)],
     komodo: KomodoClient = KomodoDep,
@@ -67,7 +69,7 @@ async def delete_server(
     return await komodo.write("DeleteServer", {"id": id})
 
 
-@mcp.tool
+@mcp.tool(annotations={"readOnlyHint": True, "openWorldHint": False})
 async def get_server_stats(server: str, komodo: KomodoClient = KomodoDep) -> Any:
     """Get system stats (CPU, memory, disk) for a server."""
     return await komodo.read("GetSystemStats", {"server": server})

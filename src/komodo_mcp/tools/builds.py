@@ -10,13 +10,13 @@ _OID = "MongoDB ObjectId from `_id.$oid`"
 mcp = FastMCP()
 
 
-@mcp.tool
+@mcp.tool(annotations={"readOnlyHint": True, "openWorldHint": False})
 async def list_builds(komodo: KomodoClient = KomodoDep) -> Any:
     """List all builds in Komodo."""
     return await komodo.read("ListBuilds")
 
 
-@mcp.tool
+@mcp.tool(annotations={"readOnlyHint": True, "openWorldHint": False})
 async def get_build(
     build: Annotated[
         str,
@@ -30,7 +30,7 @@ async def get_build(
     return await komodo.read("GetBuild", {"build": build})
 
 
-@mcp.tool
+@mcp.tool(annotations={"destructiveHint": False, "openWorldHint": False})
 async def create_build(
     name: str,
     config: dict[str, Any] | None = None,
@@ -43,7 +43,9 @@ async def create_build(
     return await komodo.write("CreateBuild", params)
 
 
-@mcp.tool
+@mcp.tool(
+    annotations={"destructiveHint": False, "idempotentHint": True, "openWorldHint": False}
+)
 async def update_build(
     id: Annotated[str, Field(description=_OID)],
     config: Annotated[
@@ -58,7 +60,7 @@ async def update_build(
     return await komodo.write("UpdateBuild", {"id": id, "config": config})
 
 
-@mcp.tool
+@mcp.tool(annotations={"idempotentHint": True, "openWorldHint": False})
 async def delete_build(
     id: Annotated[str, Field(description=_OID)],
     komodo: KomodoClient = KomodoDep,
@@ -67,7 +69,7 @@ async def delete_build(
     return await komodo.write("DeleteBuild", {"id": id})
 
 
-@mcp.tool
+@mcp.tool(annotations={"destructiveHint": True})
 async def run_build(build: str, komodo: KomodoClient = KomodoDep) -> Any:
     """Run a build (clone repo, build Docker image, push to registry)."""
     return await komodo.execute("RunBuild", {"build": build})

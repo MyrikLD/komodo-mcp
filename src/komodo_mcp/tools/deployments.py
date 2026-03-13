@@ -10,13 +10,13 @@ _OID = "MongoDB ObjectId from `_id.$oid`"
 mcp = FastMCP()
 
 
-@mcp.tool
+@mcp.tool(annotations={"readOnlyHint": True, "openWorldHint": False})
 async def list_deployments(komodo: KomodoClient = KomodoDep) -> Any:
     """List all deployments in Komodo."""
     return await komodo.read("ListDeployments")
 
 
-@mcp.tool
+@mcp.tool(annotations={"readOnlyHint": True, "openWorldHint": False})
 async def get_deployment(
     deployment: Annotated[
         str,
@@ -30,13 +30,13 @@ async def get_deployment(
     return await komodo.read("GetDeployment", {"deployment": deployment})
 
 
-@mcp.tool
+@mcp.tool(annotations={"readOnlyHint": True, "openWorldHint": False})
 async def get_deployment_log(deployment: str, komodo: KomodoClient = KomodoDep) -> Any:
     """Get logs for a deployment container."""
     return await komodo.read("GetDeploymentLog", {"deployment": deployment})
 
 
-@mcp.tool
+@mcp.tool(annotations={"destructiveHint": False, "openWorldHint": False})
 async def create_deployment(
     name: str,
     config: dict[str, Any] | None = None,
@@ -49,7 +49,9 @@ async def create_deployment(
     return await komodo.write("CreateDeployment", params)
 
 
-@mcp.tool
+@mcp.tool(
+    annotations={"destructiveHint": False, "idempotentHint": True, "openWorldHint": False}
+)
 async def update_deployment(
     id: Annotated[str, Field(description=_OID)],
     config: Annotated[
@@ -64,7 +66,7 @@ async def update_deployment(
     return await komodo.write("UpdateDeployment", {"id": id, "config": config})
 
 
-@mcp.tool
+@mcp.tool(annotations={"idempotentHint": True, "openWorldHint": False})
 async def delete_deployment(
     id: Annotated[str, Field(description=_OID)],
     komodo: KomodoClient = KomodoDep,
@@ -73,7 +75,7 @@ async def delete_deployment(
     return await komodo.write("DeleteDeployment", {"id": id})
 
 
-@mcp.tool
+@mcp.tool(annotations={"destructiveHint": True})
 async def deploy(
     deployment: str,
     stop_signal: Annotated[
@@ -99,13 +101,13 @@ async def deploy(
     return await komodo.execute("Deploy", params)
 
 
-@mcp.tool
+@mcp.tool(annotations={"destructiveHint": False, "idempotentHint": True})
 async def start_deployment(deployment: str, komodo: KomodoClient = KomodoDep) -> Any:
     """Start a stopped deployment container."""
     return await komodo.execute("StartDeployment", {"deployment": deployment})
 
 
-@mcp.tool
+@mcp.tool(annotations={"destructiveHint": True, "idempotentHint": True})
 async def stop_deployment(
     deployment: str,
     stop_time: Annotated[
@@ -123,7 +125,7 @@ async def stop_deployment(
     return await komodo.execute("StopDeployment", params)
 
 
-@mcp.tool
+@mcp.tool(annotations={"destructiveHint": True})
 async def restart_deployment(deployment: str, komodo: KomodoClient = KomodoDep) -> Any:
     """Restart a deployment container."""
     return await komodo.execute("RestartDeployment", {"deployment": deployment})

@@ -14,13 +14,13 @@ _STOP_TIME = (
 mcp = FastMCP()
 
 
-@mcp.tool
+@mcp.tool(annotations={"readOnlyHint": True, "openWorldHint": False})
 async def list_stacks(komodo: KomodoClient = KomodoDep) -> Any:
     """List all stacks in Komodo."""
     return await komodo.read("ListStacks")
 
 
-@mcp.tool
+@mcp.tool(annotations={"readOnlyHint": True, "openWorldHint": False})
 async def get_stack(
     stack: Annotated[
         str,
@@ -34,13 +34,13 @@ async def get_stack(
     return await komodo.read("GetStack", {"stack": stack})
 
 
-@mcp.tool
+@mcp.tool(annotations={"readOnlyHint": True, "openWorldHint": False})
 async def get_stack_log(stack: str, komodo: KomodoClient = KomodoDep) -> Any:
     """Get logs for a stack (all services combined, no per-service filtering)."""
     return await komodo.read("GetStackLog", {"stack": stack})
 
 
-@mcp.tool
+@mcp.tool(annotations={"destructiveHint": False, "openWorldHint": False})
 async def create_stack(
     name: str,
     config: dict[str, Any] | None = None,
@@ -53,7 +53,9 @@ async def create_stack(
     return await komodo.write("CreateStack", params)
 
 
-@mcp.tool
+@mcp.tool(
+    annotations={"destructiveHint": False, "idempotentHint": True, "openWorldHint": False}
+)
 async def update_stack(
     id: Annotated[str, Field(description=_OID)],
     config: Annotated[
@@ -74,7 +76,7 @@ async def update_stack(
     return await komodo.write("UpdateStack", {"id": id, "config": config})
 
 
-@mcp.tool
+@mcp.tool(annotations={"idempotentHint": True, "openWorldHint": False})
 async def delete_stack(
     id: Annotated[str, Field(description=_OID)],
     komodo: KomodoClient = KomodoDep,
@@ -83,7 +85,7 @@ async def delete_stack(
     return await komodo.write("DeleteStack", {"id": id})
 
 
-@mcp.tool
+@mcp.tool(annotations={"destructiveHint": True})
 async def deploy_stack(
     stack: str,
     services: Annotated[list[str] | None, Field(description=_SERVICES)] = None,
@@ -100,7 +102,7 @@ async def deploy_stack(
     return await komodo.execute("DeployStack", params)
 
 
-@mcp.tool
+@mcp.tool(annotations={"destructiveHint": False, "idempotentHint": True})
 async def start_stack(
     stack: str,
     services: Annotated[list[str] | None, Field(description=_SERVICES)] = None,
@@ -113,7 +115,7 @@ async def start_stack(
     return await komodo.execute("StartStack", params)
 
 
-@mcp.tool
+@mcp.tool(annotations={"destructiveHint": True, "idempotentHint": True})
 async def stop_stack(
     stack: str,
     services: Annotated[list[str] | None, Field(description=_SERVICES)] = None,
@@ -129,7 +131,7 @@ async def stop_stack(
     return await komodo.execute("StopStack", params)
 
 
-@mcp.tool
+@mcp.tool(annotations={"destructiveHint": True})
 async def restart_stack(
     stack: str,
     services: Annotated[list[str] | None, Field(description=_SERVICES)] = None,

@@ -10,31 +10,31 @@ _OID = "MongoDB ObjectId from `_id.$oid`"
 mcp = FastMCP()
 
 
-@mcp.tool
+@mcp.tool(annotations={"readOnlyHint": True, "openWorldHint": False})
 async def get_version(komodo: KomodoClient = KomodoDep) -> Any:
     """Get the Komodo Core API version."""
     return await komodo.read("GetVersion")
 
 
-@mcp.tool
+@mcp.tool(annotations={"readOnlyHint": True, "openWorldHint": False})
 async def get_system_info(server: str, komodo: KomodoClient = KomodoDep) -> Any:
     """Get system information (OS, CPU, memory, disks) for a server."""
     return await komodo.read("GetSystemInformation", {"server": server})
 
 
-@mcp.tool
+@mcp.tool(annotations={"readOnlyHint": True, "openWorldHint": False})
 async def list_updates(komodo: KomodoClient = KomodoDep) -> Any:
     """List recent updates/actions in Komodo."""
     return await komodo.read("ListUpdates")
 
 
-@mcp.tool
+@mcp.tool(annotations={"readOnlyHint": True, "openWorldHint": False})
 async def list_alerters(komodo: KomodoClient = KomodoDep) -> Any:
     """List all alerters in Komodo."""
     return await komodo.read("ListAlerters")
 
 
-@mcp.tool
+@mcp.tool(annotations={"readOnlyHint": True, "openWorldHint": False})
 async def get_alerter(
     alerter: Annotated[
         str,
@@ -48,7 +48,7 @@ async def get_alerter(
     return await komodo.read("GetAlerter", {"alerter": alerter})
 
 
-@mcp.tool
+@mcp.tool(annotations={"destructiveHint": False, "openWorldHint": False})
 async def create_alerter(
     name: str,
     config: dict[str, Any] | None = None,
@@ -61,7 +61,9 @@ async def create_alerter(
     return await komodo.write("CreateAlerter", params)
 
 
-@mcp.tool
+@mcp.tool(
+    annotations={"destructiveHint": False, "idempotentHint": True, "openWorldHint": False}
+)
 async def update_alerter(
     id: Annotated[str, Field(description=_OID)],
     config: Annotated[
@@ -76,7 +78,7 @@ async def update_alerter(
     return await komodo.write("UpdateAlerter", {"id": id, "config": config})
 
 
-@mcp.tool
+@mcp.tool(annotations={"idempotentHint": True, "openWorldHint": False})
 async def delete_alerter(
     id: Annotated[str, Field(description=_OID)],
     komodo: KomodoClient = KomodoDep,

@@ -10,13 +10,13 @@ _OID = "MongoDB ObjectId from `_id.$oid`"
 mcp = FastMCP()
 
 
-@mcp.tool
+@mcp.tool(annotations={"readOnlyHint": True, "openWorldHint": False})
 async def list_procedures(komodo: KomodoClient = KomodoDep) -> Any:
     """List all procedures in Komodo."""
     return await komodo.read("ListProcedures")
 
 
-@mcp.tool
+@mcp.tool(annotations={"readOnlyHint": True, "openWorldHint": False})
 async def get_procedure(
     procedure: Annotated[
         str,
@@ -30,7 +30,7 @@ async def get_procedure(
     return await komodo.read("GetProcedure", {"procedure": procedure})
 
 
-@mcp.tool
+@mcp.tool(annotations={"destructiveHint": False, "openWorldHint": False})
 async def create_procedure(
     name: str,
     config: dict[str, Any] | None = None,
@@ -43,7 +43,9 @@ async def create_procedure(
     return await komodo.write("CreateProcedure", params)
 
 
-@mcp.tool
+@mcp.tool(
+    annotations={"destructiveHint": False, "idempotentHint": True, "openWorldHint": False}
+)
 async def update_procedure(
     id: Annotated[str, Field(description=_OID)],
     config: Annotated[
@@ -58,7 +60,7 @@ async def update_procedure(
     return await komodo.write("UpdateProcedure", {"id": id, "config": config})
 
 
-@mcp.tool
+@mcp.tool(annotations={"idempotentHint": True, "openWorldHint": False})
 async def delete_procedure(
     id: Annotated[str, Field(description=_OID)],
     komodo: KomodoClient = KomodoDep,
@@ -67,7 +69,7 @@ async def delete_procedure(
     return await komodo.write("DeleteProcedure", {"id": id})
 
 
-@mcp.tool
+@mcp.tool(annotations={"destructiveHint": True})
 async def run_procedure(procedure: str, komodo: KomodoClient = KomodoDep) -> Any:
     """Run a procedure."""
     return await komodo.execute("RunProcedure", {"procedure": procedure})

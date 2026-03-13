@@ -10,13 +10,13 @@ _OID = "MongoDB ObjectId from `_id.$oid`"
 mcp = FastMCP()
 
 
-@mcp.tool
+@mcp.tool(annotations={"readOnlyHint": True, "openWorldHint": False})
 async def list_repos(komodo: KomodoClient = KomodoDep) -> Any:
     """List all repositories in Komodo."""
     return await komodo.read("ListRepos")
 
 
-@mcp.tool
+@mcp.tool(annotations={"readOnlyHint": True, "openWorldHint": False})
 async def get_repo(
     repo: Annotated[
         str,
@@ -30,7 +30,7 @@ async def get_repo(
     return await komodo.read("GetRepo", {"repo": repo})
 
 
-@mcp.tool
+@mcp.tool(annotations={"destructiveHint": False, "openWorldHint": False})
 async def create_repo(
     name: str,
     config: dict[str, Any] | None = None,
@@ -43,7 +43,9 @@ async def create_repo(
     return await komodo.write("CreateRepo", params)
 
 
-@mcp.tool
+@mcp.tool(
+    annotations={"destructiveHint": False, "idempotentHint": True, "openWorldHint": False}
+)
 async def update_repo(
     id: Annotated[str, Field(description=_OID)],
     config: Annotated[
@@ -58,7 +60,7 @@ async def update_repo(
     return await komodo.write("UpdateRepo", {"id": id, "config": config})
 
 
-@mcp.tool
+@mcp.tool(annotations={"idempotentHint": True, "openWorldHint": False})
 async def delete_repo(
     id: Annotated[str, Field(description=_OID)],
     komodo: KomodoClient = KomodoDep,
@@ -67,13 +69,13 @@ async def delete_repo(
     return await komodo.write("DeleteRepo", {"id": id})
 
 
-@mcp.tool
+@mcp.tool(annotations={"destructiveHint": True})
 async def clone_repo(repo: str, komodo: KomodoClient = KomodoDep) -> Any:
     """Clone a repository to its target server."""
     return await komodo.execute("CloneRepo", {"repo": repo})
 
 
-@mcp.tool
+@mcp.tool(annotations={"destructiveHint": False})
 async def pull_repo(repo: str, komodo: KomodoClient = KomodoDep) -> Any:
     """Pull latest changes for a repository on its target server."""
     return await komodo.execute("PullRepo", {"repo": repo})
