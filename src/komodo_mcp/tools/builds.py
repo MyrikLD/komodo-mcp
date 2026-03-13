@@ -44,7 +44,11 @@ async def create_build(
 
 
 @mcp.tool(
-    annotations={"destructiveHint": False, "idempotentHint": True, "openWorldHint": False}
+    annotations={
+        "destructiveHint": False,
+        "idempotentHint": True,
+        "openWorldHint": False,
+    }
 )
 async def update_build(
     id: Annotated[str, Field(description=_OID)],

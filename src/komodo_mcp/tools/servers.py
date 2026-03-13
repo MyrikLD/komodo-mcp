@@ -44,7 +44,11 @@ async def create_server(
 
 
 @mcp.tool(
-    annotations={"destructiveHint": False, "idempotentHint": True, "openWorldHint": False}
+    annotations={
+        "destructiveHint": False,
+        "idempotentHint": True,
+        "openWorldHint": False,
+    }
 )
 async def update_server(
     id: Annotated[str, Field(description=_OID)],

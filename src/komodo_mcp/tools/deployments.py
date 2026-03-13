@@ -50,7 +50,11 @@ async def create_deployment(
 
 
 @mcp.tool(
-    annotations={"destructiveHint": False, "idempotentHint": True, "openWorldHint": False}
+    annotations={
+        "destructiveHint": False,
+        "idempotentHint": True,
+        "openWorldHint": False,
+    }
 )
 async def update_deployment(
     id: Annotated[str, Field(description=_OID)],

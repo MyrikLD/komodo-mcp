@@ -44,7 +44,11 @@ async def create_procedure(
 
 
 @mcp.tool(
-    annotations={"destructiveHint": False, "idempotentHint": True, "openWorldHint": False}
+    annotations={
+        "destructiveHint": False,
+        "idempotentHint": True,
+        "openWorldHint": False,
+    }
 )
 async def update_procedure(
     id: Annotated[str, Field(description=_OID)],

@@ -44,7 +44,11 @@ async def create_repo(
 
 
 @mcp.tool(
-    annotations={"destructiveHint": False, "idempotentHint": True, "openWorldHint": False}
+    annotations={
+        "destructiveHint": False,
+        "idempotentHint": True,
+        "openWorldHint": False,
+    }
 )
 async def update_repo(
     id: Annotated[str, Field(description=_OID)],

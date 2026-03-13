@@ -62,7 +62,11 @@ async def create_alerter(
 
 
 @mcp.tool(
-    annotations={"destructiveHint": False, "idempotentHint": True, "openWorldHint": False}
+    annotations={
+        "destructiveHint": False,
+        "idempotentHint": True,
+        "openWorldHint": False,
+    }
 )
 async def update_alerter(
     id: Annotated[str, Field(description=_OID)],
