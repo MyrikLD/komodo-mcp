@@ -31,9 +31,21 @@ async def get_deployment(
 
 
 @mcp.tool(annotations={"readOnlyHint": True, "openWorldHint": False})
-async def get_deployment_log(deployment: str, komodo: KomodoClient = KomodoDep) -> Any:
+async def get_deployment_log(
+    deployment: str,
+    tail: Annotated[
+        int | None,
+        Field(
+            description="Number of log lines to return from the tail. Default 50, max 5000."
+        ),
+    ] = None,
+    komodo: KomodoClient = KomodoDep,
+) -> Any:
     """Get logs for a deployment container."""
-    return await komodo.read("GetDeploymentLog", {"deployment": deployment})
+    params: dict[str, Any] = {"deployment": deployment}
+    if tail is not None:
+        params["tail"] = tail
+    return await komodo.read("GetDeploymentLog", params)
 
 
 @mcp.tool(annotations={"destructiveHint": False, "openWorldHint": False})

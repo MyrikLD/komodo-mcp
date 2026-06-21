@@ -35,9 +35,24 @@ async def get_stack(
 
 
 @mcp.tool(annotations={"readOnlyHint": True, "openWorldHint": False})
-async def get_stack_log(stack: str, komodo: KomodoClient = KomodoDep) -> Any:
-    """Get logs for a stack (all services combined, no per-service filtering)."""
-    return await komodo.read("GetStackLog", {"stack": stack})
+async def get_stack_log(
+    stack: str,
+    services: Annotated[list[str] | None, Field(description=_SERVICES)] = None,
+    tail: Annotated[
+        int | None,
+        Field(
+            description="Number of log lines to return from the tail. Default 50, max 5000."
+        ),
+    ] = None,
+    komodo: KomodoClient = KomodoDep,
+) -> Any:
+    """Get logs for a stack. Optionally filter to specific services."""
+    # `services` is a required field in Komodo's GetStackLog request; an empty
+    # list means "all services". Omitting it returns 422 Unprocessable Entity.
+    params: dict[str, Any] = {"stack": stack, "services": services or []}
+    if tail is not None:
+        params["tail"] = tail
+    return await komodo.read("GetStackLog", params)
 
 
 @mcp.tool(annotations={"destructiveHint": False, "openWorldHint": False})
