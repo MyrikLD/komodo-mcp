@@ -20,7 +20,18 @@ class KomodoClient:
             endpoint,
             json={"type": operation, "params": params},
         )
-        response.raise_for_status()
+        try:
+            response.raise_for_status()
+        except httpx.HTTPStatusError as exc:
+            # Komodo returns the validation/error detail in the response body;
+            # surface it so callers see *why* a request failed (e.g. 422).
+            detail = response.text.strip()
+            message = f"Komodo {operation} failed: {exc}"
+            if detail:
+                message = f"{message}\n{detail}"
+            raise httpx.HTTPStatusError(
+                message, request=exc.request, response=exc.response
+            ) from exc
         return response.json()
 
     async def read(self, operation: str, params: dict[str, Any] | None = None) -> Any:
