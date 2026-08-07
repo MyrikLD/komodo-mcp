@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from pydantic_settings import BaseSettings
 
 
@@ -15,6 +17,11 @@ class Settings(BaseSettings):
     OAUTH_JWT_SECRET: str | None = None
     OAUTH_PASSWORD: str | None = None
     BASE_URL: str | None = None
+
+    # Directory for the revoked-token list. Tokens and client registrations are
+    # stateless and survive a restart on their own; only revocations need a file.
+    # Mount it as a volume to keep revocations across container recreation.
+    STATE_DIR: Path | None = None
 
 
 settings = Settings()  # type: ignore[call-arg]

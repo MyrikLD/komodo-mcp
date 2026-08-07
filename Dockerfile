@@ -15,6 +15,9 @@ WORKDIR /app
 COPY --from=builder /app/.venv .venv/
 
 ENV PATH="/app/.venv/bin:$PATH"
+# Revoked-token list; mount a volume here to keep revocations across recreation
+ENV KOMODO_MCP_STATE_DIR=/data
+RUN mkdir -p /data
 
 EXPOSE 8000
 

@@ -75,6 +75,23 @@ When OAuth is active, the server exposes standard OAuth 2.1 endpoints:
 
 Without OAuth configured, the server accepts all connections without authentication.
 
+### Restarts
+
+The server keeps no session state, so **restarting it does not log clients out** — no volume required:
+
+- Access and refresh tokens are self-contained JWTs, validated from their own signed claims.
+- A registered client's metadata is carried inside its `client_id`, which is itself a signed JWT.
+- Everything is signed with a key derived from `KOMODO_MCP_OAUTH_JWT_SECRET`. Keep that secret stable: changing it invalidates all tokens and client registrations, forcing every client to authorize again.
+
+The one thing that cannot be reconstructed from a token is the fact that it was **revoked**. Revocations are written to `$KOMODO_MCP_STATE_DIR/revoked_tokens.json` (the Docker image sets `KOMODO_MCP_STATE_DIR=/data`), which survives a container restart. To keep them across container *recreation* — image upgrades, `docker compose down` — mount a volume:
+
+```yaml
+    volumes:
+      - komodo-mcp-state:/data
+```
+
+Without a volume, a revoked token that has not yet expired becomes usable again after the container is recreated. Without `KOMODO_MCP_STATE_DIR` at all (e.g. local development), revocations are memory-only and are forgotten on every restart.
+
 ## Configuration
 
 | Variable | Description | Default |
@@ -87,6 +104,7 @@ Without OAuth configured, the server accepts all connections without authenticat
 | `KOMODO_MCP_OAUTH_JWT_SECRET` | Secret for signing JWT tokens | *OAuth disabled* |
 | `KOMODO_MCP_OAUTH_PASSWORD` | Password for the browser login page | *OAuth disabled* |
 | `KOMODO_MCP_BASE_URL` | Public URL of this server (used in OAuth metadata) | *OAuth disabled* |
+| `KOMODO_MCP_STATE_DIR` | Directory for the revoked-token list | `/data` in the Docker image, unset otherwise |
 
 ## Local Development
 

@@ -36,6 +36,7 @@ def _build_auth() -> KomodoOAuthProvider | None:
         base_url=settings.BASE_URL,
         jwt_secret=settings.OAUTH_JWT_SECRET,
         password=settings.OAUTH_PASSWORD,
+        state_dir=settings.STATE_DIR,
     )
 
 
