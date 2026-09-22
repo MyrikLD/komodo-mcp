@@ -1,3 +1,5 @@
+import asyncio
+import json
 from contextlib import asynccontextmanager
 from typing import Any
 
@@ -5,6 +7,38 @@ import httpx
 from fastmcp.dependencies import Depends
 
 from komodo_mcp.config import settings
+
+# Komodo holds a per-resource lock while an action runs and answers
+# `500 {"error": "Stack busy"}` to anything else touching it meanwhile.
+_BUSY_BACKOFF = (1.0, 2.0, 4.0)
+
+
+def _busy_reason(detail: str) -> str | None:
+    try:
+        error = json.loads(detail).get("error")
+    except (ValueError, AttributeError):
+        return None
+    if isinstance(error, str) and error.lower().endswith(" busy"):
+        return error
+    return None
+
+
+def _failure(
+    operation: str, response: httpx.Response, detail: str
+) -> httpx.HTTPStatusError:
+    busy = _busy_reason(detail)
+    if busy:
+        message = (
+            f"Komodo {operation} failed: {busy} — another action on it is still "
+            f"running. Wait for it to finish and retry."
+        )
+    else:
+        # Komodo returns the validation/error detail in the response body;
+        # surface it so callers see *why* a request failed (e.g. 422).
+        message = f"Komodo {operation} failed: HTTP {response.status_code}"
+        if detail:
+            message = f"{message}\n{detail}"
+    return httpx.HTTPStatusError(message, request=response.request, response=response)
 
 
 class KomodoClient:
@@ -16,23 +50,18 @@ class KomodoClient:
     async def _request(
         self, endpoint: str, operation: str, params: dict[str, Any]
     ) -> Any:
-        response = await self._client.post(
-            endpoint,
-            json={"type": operation, "params": params},
-        )
-        try:
-            response.raise_for_status()
-        except httpx.HTTPStatusError as exc:
-            # Komodo returns the validation/error detail in the response body;
-            # surface it so callers see *why* a request failed (e.g. 422).
+        for delay in (*_BUSY_BACKOFF, None):
+            response = await self._client.post(
+                endpoint,
+                json={"type": operation, "params": params},
+            )
+            if response.is_success:
+                return response.json()
             detail = response.text.strip()
-            message = f"Komodo {operation} failed: {exc}"
-            if detail:
-                message = f"{message}\n{detail}"
-            raise httpx.HTTPStatusError(
-                message, request=exc.request, response=exc.response
-            ) from exc
-        return response.json()
+            if delay is not None and _busy_reason(detail):
+                await asyncio.sleep(delay)
+                continue
+            raise _failure(operation, response, detail)
 
     async def read(self, operation: str, params: dict[str, Any] | None = None) -> Any:
         return await self._request("/read", operation, params or {})
