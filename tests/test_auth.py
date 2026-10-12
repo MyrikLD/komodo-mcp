@@ -168,6 +168,16 @@ async def test_login_wrong_password_returns_401(provider, registered):
     assert pending_id in provider._pending  # not consumed
 
 
+async def test_login_non_ascii_password_returns_401(provider, registered):
+    login_url = await provider.authorize(registered, _make_auth_params())
+    pending_id = login_url.split("id=")[1]
+
+    response = await provider._login_post(_make_login_request(pending_id, "пароль"))
+
+    assert response.status_code == 401
+    assert pending_id in provider._pending
+
+
 async def test_login_expired_pending_returns_400(provider, registered):
     login_url = await provider.authorize(registered, _make_auth_params())
     pending_id = login_url.split("id=")[1]

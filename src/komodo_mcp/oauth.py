@@ -217,7 +217,8 @@ class KomodoOAuthProvider(OAuthProvider):
                 status_code=400,
             )
 
-        if not secrets.compare_digest(password, self._password):
+        # compare_digest rejects non-ASCII str, so compare UTF-8 bytes
+        if not secrets.compare_digest(password.encode(), self._password.encode()):
             logger.warning(
                 "login POST: wrong password for client=%s", pending.client_name
             )
